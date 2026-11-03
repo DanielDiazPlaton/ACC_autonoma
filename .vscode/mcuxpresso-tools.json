@@ -1,0 +1,12 @@
+{
+  "version": "25.3",
+  "toolchainPath": "${userHome}/zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi",
+  "linkedProjects": [],
+  "trustZoneType": "none",
+  "multicoreType": "none",
+  "projectType": "zephyr-workspace",
+  "sdk": {
+    "version": "4.5.99",
+    "path": "${userHome}/Documents/test_UAG/ACC_protocolos_uag"
+  }
+}
