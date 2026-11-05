@@ -1,4 +1,3 @@
 /build
 /.vscode
 mcux_include.json
-CMakePresets.json
