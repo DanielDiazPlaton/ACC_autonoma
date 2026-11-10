@@ -1,3 +1,5 @@
 /build
 /.vscode
 mcux_include.json
+# CMSIS-SVD register description files
+svd/
