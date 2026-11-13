@@ -87,7 +87,7 @@ void Rte_Start(void)
     k_tid_t tid_tx = k_thread_create(
         &thread_comm_tx_data,
         stack_comm_tx,
-        K_THREAD_STACK_SIZEOF(stack_comm_rx),
+        K_THREAD_STACK_SIZEOF(stack_comm_tx),
         OsTask_comm_tx, 
         NULL, NULL, NULL,
         PRIORIDAD_TX,
