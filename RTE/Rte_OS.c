@@ -4,6 +4,7 @@
 #include <zephyr/sys/printk.h>
 #include "Rte_OS.h"
 
+
 // Esto define el stack y su prioridad
 //hilo 1 diagnostico
 #define STACK_SIZE_diagnostic      1024
@@ -36,20 +37,17 @@ static struct k_thread thread_nvm_data;
 //hilo 1 diagnostic
 void OsTask_diagnostic(void *p1, void *p2, void *p3)
 {
-    // datos que se ejecutan una sola vez
+    //datos que se ejectuan una sola vez
 
-
-    while(1)
+    while (1)
     {
         const char *tname = k_thread_name_get(k_current_get());
-
-        printk("[%lld ms] Ejecutando thread: %s, Prioridad: %d\n",
-        k_uptime_get(),
-        tname ? tname : "unnamed",
-        k_thread_priority_get(k_current_get()));
-
+        printk("%lld ms] Ejecutando thread: %s, Prioridad: %d\n", 
+        k_uptime_get(), 
+        tname ? tname : "unnamed", 
+        k_thread_priority_get(k_current_get())); 
         k_msleep(20);
-    }  // End while
+    }// End while
 }
 
 //hilo 2 control
