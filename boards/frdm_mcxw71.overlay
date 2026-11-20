@@ -1,0 +1,20 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/ {
+    aliases {
+        servo-izquierdo = &servo_izquierdo;
+        servo-derecho = &servo_derecho;
+    };
+
+    servos_prueba {
+        compatible = "pwm-leds";
+
+        servo_izquierdo: servo_izquierdo {
+            pwms = <&tpm0 1 20000000 0>;
+        };
+
+        servo_derecho: servo_derecho {
+            pwms = <&tpm0 2 20000000 0>;
+        };
+    };
+};
