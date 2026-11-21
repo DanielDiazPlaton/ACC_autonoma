@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+#include "Rte_OS.h"
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
@@ -34,15 +35,18 @@ int main(void)
 		return 0;
 	}
 
+	Rte_Start();
+	
 	while (1) {
-		ret = gpio_pin_toggle_dt(&led);
-		if (ret < 0) {
-			return 0;
-		}
+		k_sleep(K_FOREVER);
+		// ret = gpio_pin_toggle_dt(&led);
+		// if (ret < 0) {
+		// 	return 0;
+		// }
 
-		led_state = !led_state;
-		printf("LED state: %s\n", led_state ? "ON" : "OFF");
-		k_msleep(SLEEP_TIME_MS);
+		// led_state = !led_state;
+		// printf("LED state: %s\n", led_state ? "ON" : "OFF");
+		// k_msleep(SLEEP_TIME_MS);
 	}
 	return 0;
 }
