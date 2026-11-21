@@ -10,6 +10,7 @@ target_include_directories(app PRIVATE
     RTE
     BSW/MCAL
     BSW/MOTOR
+    BSW/Direccion
 )
 
 target_sources(app PRIVATE
@@ -17,4 +18,6 @@ target_sources(app PRIVATE
     RTE/Rte_OS.c
     BSW/MCAL/gpio_mcal.c
     BSW/MOTOR/motor.c
+    BSW/MCAL/pwm_mcal.c
+    BSW/Direccion/Direccion.c
 )

@@ -118,6 +118,7 @@ void OsTask_Nvm(void *p1, void *p2, void *p3)
 
 void Rte_Start(void)
 {
+
     // Inicializacion del OS diagnostic
     k_tid_t tid_diagnostic = k_thread_create(&thread_diagnostic_data, stack_diagnostic,
                                     K_THREAD_STACK_SIZEOF(stack_diagnostic),
