@@ -8,6 +8,7 @@ project(blinky)
 
 target_include_directories(app PRIVATE
     RTE
+    BSW/Comm
     BSW/MCAL
     BSW/MOTOR
     BSW/Direccion
@@ -16,6 +17,7 @@ target_include_directories(app PRIVATE
 target_sources(app PRIVATE
     src/main.c
     RTE/Rte_OS.c
+    BSW/Comm/Can_mis.c
     BSW/MCAL/gpio_mcal.c
     BSW/MOTOR/motor.c
     BSW/MCAL/pwm_mcal.c

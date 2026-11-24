@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
-#include "Rte_OS.h"
+#include <Can_mis.h>
+#include <Rte_OS.h>
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
@@ -23,6 +24,8 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 int main(void)
 {
+
+	Rte_Start();
 	int ret;
 	bool led_state = true;
 

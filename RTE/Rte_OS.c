@@ -3,6 +3,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
 #include "Rte_OS.h"
+#include <Can_mis.h>
 
 
 // Esto define el stack y su prioridad
