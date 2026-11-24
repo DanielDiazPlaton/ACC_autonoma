@@ -6,9 +6,11 @@ project(blinky)
 
 target_include_directories(app PRIVATE
     RTE
+    BSW/Comm
     )
 
 target_sources(app PRIVATE 
     src/main.c
     RTE/Rte_OS.c
+    BSW/Comm/Can_mis.c
     )
