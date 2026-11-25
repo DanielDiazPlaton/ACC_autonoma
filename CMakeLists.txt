@@ -7,6 +7,8 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(blinky)
 
 target_include_directories(app PRIVATE
+    ASW
+    ASW/DIAG
     RTE
     BSW/Comm
     BSW/MCAL
@@ -17,13 +19,14 @@ target_include_directories(app PRIVATE
 
 target_sources(app PRIVATE
     src/main.c
+    ASW/controles.c
     RTE/Rte_OS.c
+    RTE/Acc_Signals.c
     BSW/Comm/Can_mis.c
     BSW/MCAL/gpio_mcal.c
     BSW/MOTOR/motor.c
     BSW/MCAL/pwm_mcal.c
     BSW/Direccion/Direccion.c
-    RTE/Acc_Signals.c
     BSW/Comm/CanIf.c
     BSW/NVM/Nvm_Manager.c
 )

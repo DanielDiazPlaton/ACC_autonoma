@@ -9,6 +9,8 @@
 
         servo-izquierdo = &servo_izquierdo;
         servo-derecho = &servo_derecho;
+
+        acc-btn = &acc_toggle_button;
     };
 
     motor_gpios {
@@ -34,4 +36,16 @@
             pwms = <&tpm0 2 20000000 0>;
         };
     };
+
+    acc_user_buttons {
+        compatible = "gpio-keys";
+        acc_toggle_button: button_acc_on_off {
+            gpios = <&gpiod 1 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+            label = "ACC Power Toggle Button PTD1";
+        };
+    };
+};
+
+&gpiod {
+    status = "okay";
 };
