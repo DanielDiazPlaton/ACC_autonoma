@@ -1,0 +1,37 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    aliases {
+        motor-in1 = &motor_in1;
+        motor-in2 = &motor_in2;
+
+        servo-izquierdo = &servo_izquierdo;
+        servo-derecho = &servo_derecho;
+    };
+
+    motor_gpios {
+        compatible = "gpio-leds";
+
+        motor_in1: motor_in1 {
+            gpios = <&gpioc 1 GPIO_ACTIVE_HIGH>;
+        };
+
+        motor_in2: motor_in2 {
+            gpios = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        };
+    };
+
+    servos_prueba {
+        compatible = "pwm-leds";
+
+        servo_izquierdo: servo_izquierdo {
+            pwms = <&tpm0 1 20000000 0>;
+        };
+
+        servo_derecho: servo_derecho {
+            pwms = <&tpm0 2 20000000 0>;
+        };
+    };
+};
