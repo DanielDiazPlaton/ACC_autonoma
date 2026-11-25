@@ -1,127 +1,148 @@
-#include <Can_mis.h>
+#include "Can_mis.h"
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
 
+K_SEM_DEFINE(isotp_tx_sem, 1, 1);
 
-
-
-
-const struct isotp_msg_id rx_addr_8_0 = {
-	.std_id = 0x80,
-#ifdef CONFIG_SAMPLE_CAN_FD_MODE
-	.flags = ISOTP_MSG_FDF | ISOTP_MSG_BRS,
-#endif
-};
-const struct isotp_msg_id tx_addr_8_0 = {
-	.std_id = 0x180,
-#ifdef CONFIG_SAMPLE_CAN_FD_MODE
-	.dl = 64,
-	.flags = ISOTP_MSG_FDF | ISOTP_MSG_BRS,
-#endif
-};
-const struct isotp_msg_id rx_addr_0_5 = {
-	.std_id = 0x01,
-#ifdef CONFIG_SAMPLE_CAN_FD_MODE
-	.flags = ISOTP_MSG_FDF | ISOTP_MSG_BRS,
-#endif
-};
-const struct isotp_msg_id tx_addr_0_5 = {
-	.std_id = 0x101,
-#ifdef CONFIG_SAMPLE_CAN_FD_MODE
-	.dl = 64,
-	.flags = ISOTP_MSG_FDF | ISOTP_MSG_BRS,
-#endif
+/* Direcciones ISO-TP cruzadas para Loopback en la misma tarjeta */
+static const struct isotp_msg_id rx_addr_acc = {
+    .std_id = CAN_ACC_RX_ID,
 };
 
-const struct device *can_dev;
-struct isotp_recv_ctx recv_ctx_8_0;
-struct isotp_recv_ctx recv_ctx_0_5;
+static const struct isotp_msg_id tx_addr_acc = {
+    .std_id = CAN_ACC_TX_ID,
+};
 
-const char tx_data_large[] =
-"========================================\n"
-"|   ____  ___  ____       ____  ____   |\n"
-"|  |_  _|/ __||    | ___ |_  _||  _ \\  |\n"
-"|   _||_ \\__ \\| || | ___   ||  | ___/  |\n"
-"|  |____||___/|____|       ||  |_|     |\n"
-"========================================\n";
+/* Canal 1: Envío hacia N947 */
+static const struct isotp_msg_id tx_to_n947   = { .std_id = 0x180 };
+static const struct isotp_msg_id fc_from_n947 = { .std_id = 0x080 };
 
-const char tx_data_small[] = "This is the sample test for the short payload\n";
+/* Canal 2: Recepción de respuesta desde N947 */
+static const struct isotp_msg_id rx_from_n947 = { .std_id = 0x101 };
+static const struct isotp_msg_id fc_to_n947   = { .std_id = 0x001 };
 
-static struct isotp_send_ctx send_ctx_8_0;
-static struct isotp_send_ctx send_ctx_0_5;
-const struct isotp_fc_opts fc_opts_8_0 = {.bs = 8, .stmin = 0};
-const struct isotp_fc_opts fc_opts_0_5 = {.bs = 0, .stmin = 5};
+static const struct device *can_dev;
+static struct isotp_recv_ctx recv_ctx_acc;
+static struct isotp_send_ctx send_ctx_acc;
 
-int32_t can_init_mis(struct isotp_recv_ctx *rctx, const struct device *can_dev, const struct isotp_msg_id *rx_addr, const struct isotp_msg_id *tx_addr, const struct isotp_fc_opts *opts)
+/* Parámetros de control de flujo (Block Size = 8, STmin = 0 ms) */
+static const struct isotp_fc_opts fc_opts_acc = {
+    .bs = 8,
+    .stmin = 0
+};
+
+static void send_complete_cb(int error_nr, void *arg)
+{
+    ARG_UNUSED(arg);
+    /* Liberar el contexto TX solo cuando ISO-TP realmente terminó */
+    k_sem_give(&isotp_tx_sem);
+
+    if (error_nr == ISOTP_N_OK) {
+        printk("[CAN-ISOTP] TX completado con exito\n");
+    } else {
+        printk("[CAN-ISOTP] Error en callback TX [%d]\n", error_nr);
+    }
+}
+
+int32_t can_init_mis(void)
 {
     int32_t ret;
 
-	ret = isotp_bind(&recv_ctx_8_0, can_dev,
-			 &tx_addr_8_0, &rx_addr_8_0,
-			 &fc_opts_8_0, K_FOREVER);
-	if (ret != ISOTP_N_OK) {
-		printk("Failed to bind to rx ID %d [%d]\n",
-		       rx_addr_8_0.std_id, ret);
-	}
-
+    /* 1. Obtener instancia del Device Tree (zephyr,canbus -> flexcan0) */
     can_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_canbus));
     if (!device_is_ready(can_dev)) {
-        printk("CAN: Device driver not ready.\n");
-        ret = 0;
+        printk("[CAN] Error: Dispositivo CAN no esta listo.\n");
+        return -ENODEV;
     }
 
-    return ret;
+#if CAN_TEST_LOOPBACK_MODE
+    /* 2. Configurar modo Loopback interno antes de arrancar el periférico */
+    ret = can_set_mode(can_dev, CAN_MODE_LOOPBACK);
+    if (ret != 0) {
+        printk("[CAN] Error al configurar modo Loopback [%d]\n", ret);
+        return ret;
+    }
+    printk("[CAN] Modo LOOPBACK habilitado\n");
+#endif
+
+    /* 3. Arrancar el controlador FlexCAN */
+    can_set_bitrate(can_dev, 500000);
+    can_set_mode(can_dev, CAN_MODE_NORMAL);
+    ret = can_start(can_dev);
+    if (ret != 0) {
+        printk("[CAN] Error al iniciar controlador CAN [%d]\n", ret);
+        return ret;
+    }
+
+    /* 4. Vincular contexto de recepción ISO-TP en el ID 0x080 */
+    ret = isotp_bind(&recv_ctx_acc, can_dev,
+                 &rx_from_n947, &fc_to_n947,
+                 &fc_opts_acc, K_FOREVER);
+    if (ret != ISOTP_N_OK) {
+        printk("[CAN] Error en isotp_bind RX ID 0x%X [%d]\n",
+               rx_addr_acc.std_id, ret);
+        return ret;
+    }
+
+    printk("[CAN] Inicializado correctamente (Escuchando ID 0x%X)\n",
+           rx_addr_acc.std_id);
+    return 0;
 }
 
-void send_complette_cb(int error_nr, void *arg)
+void can_receive_data(void)
 {
-	ARG_UNUSED(arg);
-	printk("TX complete cb [%d]\n", error_nr);
-}
+    int rem_len;
+    int received_len = 0;
+    struct net_buf *buf;
+    char rx_buffer[64] = {0};
 
-
-void can_receive_data(struct isotp_recv_ctx *rctx)
-{
-    int rem_len, received_len;
-	struct net_buf *buf;
-    received_len = 0;
     do {
-        rem_len = isotp_recv_net(&recv_ctx_8_0, &buf,
-                        K_MSEC(2000));
+        rem_len = isotp_recv_net(&recv_ctx_acc, &buf, K_MSEC(1000));
         if (rem_len < 0) {
-            printk("Receiving error [%d]\n", rem_len);
-            break;
+            if (rem_len != ISOTP_RECV_TIMEOUT) {
+                printk("[CAN-RX] Error de recepcion [%d]\n", rem_len);
+            }
+            return;
         }
 
         while (buf != NULL) {
+            if ((received_len + buf->len) < sizeof(rx_buffer)) {
+                memcpy(&rx_buffer[received_len], buf->data, buf->len);
+            }
             received_len += buf->len;
-            printk("%.*s", buf->len, buf->data);
             buf = net_buf_frag_del(NULL, buf);
         }
-    } while (rem_len);
-    printk("Got %d bytes in total\n", received_len);
+    } while (rem_len > 0);
+
+    if (received_len > 0) {
+        printk("[CAN-RX] (%d bytes) -> %s", received_len, rx_buffer);
+    }
 }
 
-
-void can_send_data(struct isotp_send_ctx *sctx, const struct device *can_dev, const uint8_t *data, size_t len, const struct isotp_msg_id *tx_addr, const struct isotp_msg_id *rx_addr, isotp_tx_callback_t complete_cb, void *cb_arg)
+int32_t can_send_data(const uint8_t *data, size_t len)
 {
     int32_t ret;
 
-    printk("Start sending data\n");
-
-    k_msleep(1000);
-    ret = isotp_send(&send_ctx_0_5, can_dev,
-                tx_data_small, sizeof(tx_data_small),
-                &tx_addr_0_5, &rx_addr_0_5,
-                send_complette_cb, NULL);
-    if (ret != ISOTP_N_OK) {
-        printk("Error while sending data to ID %d [%d]\n",
-                tx_addr_0_5.std_id, ret);
+    if (can_dev == NULL || data == NULL || len == 0) {
+        return -EINVAL;
     }
 
-    ret = isotp_send(&send_ctx_8_0, can_dev,
-                tx_data_large, sizeof(tx_data_large),
-                &tx_addr_8_0, &rx_addr_8_0, NULL, NULL);
-    if (ret != ISOTP_N_OK) {
-        printk("Error while sending data to ID %d [%d]\n",
-                tx_addr_8_0.std_id, ret);
+    /* Esperar máximo 500 ms a que termine el envío anterior; si el bus está
+       caído o sin ACK, aborta limpiamente sin corromper send_ctx_acc */
+    if (k_sem_take(&isotp_tx_sem, K_MSEC(500)) != 0) {
+        printk("[CAN-TX] Bus ocupado / sin ACK previo, paquete omitido\n");
+        return -EBUSY;
     }
+
+    ret = isotp_send(&send_ctx_acc, can_dev,
+                 data, len,
+                 &tx_to_n947, &fc_from_n947,
+                 send_complete_cb, NULL);
+    if (ret != ISOTP_N_OK) {
+        /* Si falló al iniciar, devolvemos el semáforo inmediatamente */
+        k_sem_give(&isotp_tx_sem);
+        printk("[CAN-TX] Error al enviar datos [%d]\n", ret);
+    }
+
+    return ret;
 }
