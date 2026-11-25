@@ -7,6 +7,7 @@
 #include "CanIf.h"
 #include "Acc_Signals.h"
 #include "Nvm_Manager.h"
+#include "controles.h"
 
 /* Tamaños de stack (2048 bytes para hilos con ISO-TP/printk) */
 #define STACK_SIZE_diagnostic   1024
@@ -59,11 +60,23 @@ void OsTask_control(void *p1, void *p2, void *p3)
     uint8_t sim_dist  = 45;
 
     while (1) {
+
+        /* 1. Lectura de entradas físicas (Botón ACC PTD1) */
+        Controles_ProcesarBotonAcc();
+
         /* Simulación dinámica de telemetría ACC */
         sim_speed = (sim_speed >= 115) ? 60 : (sim_speed + 1);
         sim_dist  = (sim_dist <= 8) ? 45 : (sim_dist - 1);
 
-        g_AccToClusterSignals.acc_state         = ACC_STATE_ACTIVE;
+        /* Dentro de OsTask_control: */
+        if (g_AccToClusterSignals.acc_state == ACC_STATE_ACTIVE) {
+            sim_speed = (sim_speed >= 115) ? 60 : (sim_speed + 1);
+            sim_dist  = (sim_dist <= 8) ? 45 : (sim_dist - 1);
+            g_AccToClusterSignals.motor_pwm_duty = (sim_dist < 15) ? 10 : 65;
+        } else {
+            g_AccToClusterSignals.motor_pwm_duty = 0;
+        }
+
         g_AccToClusterSignals.vehicle_speed_kmh = sim_speed;
         g_AccToClusterSignals.set_speed_kmh     = g_ClusterToAccCommands.set_speed_req_kmh;
         g_AccToClusterSignals.target_distance_m = sim_dist;
@@ -110,7 +123,7 @@ void OsTask_comm_tx(void *p1, void *p2, void *p3)
 void OsTask_Nvm(void *p1, void *p2, void *p3)
 {
     while (1) {
-        k_msleep(1000);
+        k_msleep(500);
     }
 }
 
@@ -126,6 +139,8 @@ void Rte_Start(void)
         printk("[RTE] Fallo critico al inicializar CanIf\n");
         return;
     }
+
+    Controles_Init();
 
     k_tid_t tid_diagnostic = k_thread_create(&thread_diagnostic_data, stack_diagnostic,
                                              K_THREAD_STACK_SIZEOF(stack_diagnostic),
