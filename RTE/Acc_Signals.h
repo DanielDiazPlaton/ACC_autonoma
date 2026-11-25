@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 /* Estados operativos del Control Crucero Adaptativo */
 typedef enum {
@@ -53,8 +54,6 @@ extern char g_VehicleVIN[VEHICLE_VIN_LENGTH + 1U];
 /* Helper para calcular el Byte 7 (Alive Counter + Checksum XOR) */
 uint8_t Acc_ComputeAliveCrc(const Acc_ClusterSignals_t *sig, uint8_t counter);
 
-/* Funciones de interfaz hacia NVM (OsTask_Nvm / Flash interna) */
-int32_t Nvm_InitAndLoadVIN(void);
-int32_t Nvm_SaveVIN(const uint8_t *new_vin, size_t len);
+
 
 #endif /* ACC_SIGNALS_H */
