@@ -12,6 +12,7 @@ target_include_directories(app PRIVATE
     BSW/MCAL
     BSW/MOTOR
     BSW/Direccion
+    BSW/DCM/DSL
 )
 
 target_sources(app PRIVATE
@@ -22,4 +23,5 @@ target_sources(app PRIVATE
     BSW/MOTOR/motor.c
     BSW/MCAL/pwm_mcal.c
     BSW/Direccion/Direccion.c
+    BSW/DCM/DSL/DSL.c
 )
