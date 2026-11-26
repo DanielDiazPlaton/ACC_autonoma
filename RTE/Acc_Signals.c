@@ -1,7 +1,8 @@
 #include "Acc_Signals.h"
 
+
 /* VIN por defecto de 17 caracteres exactos si la Flash está virgen */
-char g_VehicleVIN[VEHICLE_VIN_LENGTH + 1U] = "3N1ACC2026MCXW710";
+char g_VehicleVIN[VEHICLE_VIN_LENGTH + 1U] = "3N1UAG2026MCXW710";
 
 volatile Acc_ClusterSignals_t g_AccToClusterSignals = {
     .acc_state         = ACC_STATE_STANDBY,
