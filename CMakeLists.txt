@@ -23,6 +23,7 @@ target_sources(app PRIVATE
     RTE/Rte_OS.c
     RTE/Acc_Signals.c
     BSW/Comm/Can_mis.c
+    BSW/DCM/Dcm.c
     BSW/MCAL/gpio_mcal.c
     BSW/MOTOR/motor.c
     BSW/MCAL/pwm_mcal.c
