@@ -17,6 +17,7 @@ target_include_directories(app PRIVATE
     BSW/DCM/DSL
     BSW/NVM
     BSW/DCM/DSD
+    BSW/DCM/DSP
 )
 
 target_sources(app PRIVATE
@@ -34,4 +35,6 @@ target_sources(app PRIVATE
     BSW/Comm/CanIf.c
     BSW/NVM/Nvm_Manager.c
     BSW/DCM/DSD/DSD.c
+    BSW/DCM/DSP/DSP.c
+    ASW/DIAG/diag_read.c
 )
