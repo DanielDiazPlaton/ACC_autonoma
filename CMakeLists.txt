@@ -18,6 +18,8 @@ target_include_directories(app PRIVATE
     BSW/NVM
     BSW/DCM/DSD
     BSW/DCM/DSP
+    BSW/IO
+    BSW/Sensors
 )
 
 target_sources(app PRIVATE
@@ -37,4 +39,9 @@ target_sources(app PRIVATE
     BSW/DCM/DSD/DSD.c
     BSW/DCM/DSP/DSP.c
     ASW/DIAG/diag_read.c
+    BSW/IO/Ignition_Drv.c
+    BSW/Sensors/Ultrasonic_Drv.c
+    BSW/Sensors/Lidar_Drv.c
+    BSW/Sensors/Lidar_Sim_Drv.c
+    BSW/Sensors/Sensors_Mgr.c
 )

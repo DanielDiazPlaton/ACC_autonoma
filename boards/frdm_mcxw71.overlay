@@ -11,6 +11,17 @@
         servo-derecho = &servo_derecho;
 
         acc-btn = &acc_toggle_button;
+
+        /* Alias nuevo para el LiDAR TF-Luna */
+        lidar-uart = &lpuart0;
+    };
+
+    /* Nodos nuevos para JSN-SR04T, botón de ignición y relevador 12V */
+    zephyr,user {
+        us-trig-gpios   = <&gpiob 5 GPIO_ACTIVE_HIGH>;
+        us-echo-gpios   = <&gpiob 4 GPIO_ACTIVE_HIGH>;
+        ign-btn-gpios   = <&gpiod 2 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+        obd-relay-gpios = <&gpiod 3 GPIO_ACTIVE_HIGH>;
     };
 
     motor_gpios {
@@ -44,6 +55,28 @@
             label = "ACC Power Toggle Button PTD1";
         };
     };
+};
+
+&pinctrl {
+    pinmux_lpuart0_lidar: pinmux_lpuart0_lidar {
+        group0 {
+            pinmux = <LPUART0_RX_PTA16>,
+                     <LPUART0_TX_PTA17>;
+            slew-rate = "slow";
+            drive-strength = "low";
+        };
+    };
+};
+
+&lpuart0 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&pinmux_lpuart0_lidar>;
+    pinctrl-names = "default";
+};
+
+&gpiob {
+    status = "okay";
 };
 
 &gpiod {

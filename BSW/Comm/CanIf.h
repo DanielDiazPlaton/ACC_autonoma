@@ -10,7 +10,8 @@ typedef enum {
     PDU_ID_RX_CLUSTER_ACC_CMD    = 1,  /* RPi -> MCXW71 (0x101) */
     PDU_ID_RX_UDS_DIAG_REQ_PHYS  = 2,  /* RPi -> MCXW71 (0x7E0) */
     PDU_ID_RX_UDS_DIAG_REQ_FUNC  = 3,  /* Broadcast -> MCXW71 (0x7DF) */
-    PDU_ID_TX_UDS_DIAG_RESP      = 4   /* MCXW71 -> RPi (0x7E8) */
+    PDU_ID_TX_UDS_DIAG_RESP      = 4,   /* MCXW71 -> RPi (0x7E8) */
+    PDU_ID_TX_ACC_SENSOR_TELEMETRY = 5
 } PduIdType;
 
 /* Estructura estándar AUTOSAR PduInfoType */

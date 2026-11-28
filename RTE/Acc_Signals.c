@@ -22,6 +22,8 @@ volatile Cluster_To_Acc_Cmd_t g_ClusterToAccCommands = {
     .reserved          = {0}
 };
 
+volatile Acc_Sensor_Telemetry_Msg_t g_AccSensorTelemetry = {0};
+
 uint8_t Acc_ComputeAliveCrc(const Acc_ClusterSignals_t *sig, uint8_t counter)
 {
     const uint8_t *raw = (const uint8_t *)sig;

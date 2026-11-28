@@ -7,6 +7,7 @@
 #include <zephyr/canbus/isotp.h>
 
 #define CAN_ID_ACC_STATUS_TX     0x180U
+#define CAN_ID_ACC_TELEMETRY_TX  0x181U
 #define CAN_ID_CLUSTER_CMD_RX    0x101U
 #define CAN_ID_UDS_PHYS_REQ_RX   0x7E0U
 #define CAN_ID_UDS_FUNC_REQ_RX   0x7DFU
@@ -131,6 +132,15 @@ int32_t CanIf_Transmit(PduIdType TxPduId, const PduInfoType *PduInfoPtr)
     if (TxPduId == PDU_ID_TX_ACC_CLUSTER_STATUS) {
         struct can_frame frame = {
             .id = CAN_ID_ACC_STATUS_TX,
+            .dlc = 8,
+            .flags = 0
+        };
+        memcpy(frame.data, PduInfoPtr->SduDataPtr, 8);
+        return can_send(can_dev, &frame, K_MSEC(50), NULL, NULL);
+    }
+    else if (TxPduId == PDU_ID_TX_ACC_SENSOR_TELEMETRY) {
+        struct can_frame frame = {
+            .id = CAN_ID_ACC_TELEMETRY_TX,
             .dlc = 8,
             .flags = 0
         };

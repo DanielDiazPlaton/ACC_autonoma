@@ -54,6 +54,15 @@ extern char g_VehicleVIN[VEHICLE_VIN_LENGTH + 1U];
 /* Helper para calcular el Byte 7 (Alive Counter + Checksum XOR) */
 uint8_t Acc_ComputeAliveCrc(const Acc_ClusterSignals_t *sig, uint8_t counter);
 
+/* Trama CAN 0x181 (8 bytes): Telemetría de sensores y actuadores -> Clúster */
+typedef struct __attribute__((packed)) {
+    uint16_t lidar_dist_cm;       /* Lectura directa LiDAR [cm] */
+    uint16_t ultrasonic_dist_cm;  /* Lectura directa Ultrasónico [cm] */
+    int16_t  rel_speed_cms;       /* Velocidad relativa [cm/s] */
+    uint8_t  throttle_cmd_pct;    /* Comando de acelerador/motor [0..100 %] */
+    uint8_t  brake_cmd_pct;       /* Comando de freno [0..100 %] */
+} Acc_Sensor_Telemetry_Msg_t;
 
+extern volatile Acc_Sensor_Telemetry_Msg_t g_AccSensorTelemetry;
 
 #endif /* ACC_SIGNALS_H */

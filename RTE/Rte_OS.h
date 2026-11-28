@@ -10,6 +10,7 @@ void Rte_Start(void);
 
 void OsTask_diagnostic(void *p1, void *p2, void *p3);
 void OsTask_control(void *p1, void *p2, void *p3);
+void OsTask_sensors(void *p1, void *p2, void *p3);
 void OsTask_comm_rx(void * p1, void * p2, void * p3);
 void OsTask_comm_tx(void * p1, void * p2, void * p3); 
 void OsTask_Nvm(void *p1, void *p2, void *p3);

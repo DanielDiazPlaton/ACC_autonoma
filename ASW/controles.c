@@ -1,5 +1,6 @@
 #include "controles.h"
 #include "Acc_Signals.h"
+#include "Ignition_Drv.h"
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/sys/printk.h>
@@ -28,7 +29,6 @@ int32_t Controles_Init(void)
         return ret;
     }
 
-    /* Arranca apagado por seguridad */
     acc_encendido = false;
     g_AccToClusterSignals.acc_state = ACC_STATE_OFF;
 
@@ -38,14 +38,31 @@ int32_t Controles_Init(void)
 
 void Controles_ProcesarBotonAcc(void)
 {
-    /* gpio_pin_get_dt devuelve 1 cuando el pin esta presionado (logica activa en bajo) */
     int curr_state = gpio_pin_get_dt(&acc_btn);
-
     if (curr_state < 0) {
         return;
     }
 
-    /* Deteccion de flanco ascendente logico (momento exacto en que se presiona) */
+    /* 1. Interlock con Ignición: si está OFF, forzar ACC apagado e ignorar activación */
+    if (!Ignition_IsOn()) {
+        if (acc_encendido) {
+            acc_encendido = false;
+            g_AccToClusterSignals.acc_state = ACC_STATE_OFF;
+            g_AccSensorTelemetry.throttle_cmd_pct = 0U;
+            /* Si conservaste tu struct anterior en Acc_Signals.h, usa:
+               g_AccToClusterSignals.motor_pwm_duty = 0; */
+            printk("[Controles] Ignicion OFF -> ACC desactivado automaticamente\n");
+        }
+
+        if (curr_state == 1 && prev_btn_state == 0) {
+            printk("[Controles] Ignicion en OFF: enciende ignicion (PTD2) antes de activar ACC\n");
+        }
+
+        prev_btn_state = curr_state;
+        return;
+    }
+
+    /* 2. Ignición ON: detección de flanco en PTD1 para alternar ACC */
     if (curr_state == 1 && prev_btn_state == 0) {
         k_msleep(30); /* Antirrebote mecanico de 30 ms */
 
@@ -57,7 +74,7 @@ void Controles_ProcesarBotonAcc(void)
                 printk("[Controles] Boton PTD1 presionado -> ACC ENCENDIDO (ACTIVE)\n");
             } else {
                 g_AccToClusterSignals.acc_state = ACC_STATE_OFF;
-                g_AccToClusterSignals.motor_pwm_duty = 0;
+                g_AccSensorTelemetry.throttle_cmd_pct = 0U;
                 printk("[Controles] Boton PTD1 presionado -> ACC APAGADO (OFF)\n");
             }
         }
